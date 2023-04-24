@@ -82,13 +82,13 @@ def get_items(ilist_date, items):
         # Print finalized list
         print(f'List on {ilist_date}\n')
         for i in items[i]:
-        print(f'{items[i]}\n')
+            print(f'{items[i]}\n')
         '''
         # *** STRETCH GOAL *** Prompt for corrections
         correct_list(items)
         '''
     else:
-        print('Please input /'Y'/ for yes or /'N'/ for no.')
+        print('Please input \'Y\' for yes or \'N\' for no.')
         get_items()
 
 # *** STRETCH GOAL ***
@@ -108,9 +108,11 @@ def correct_list(items):
 
 def check_recent():
     # Find most recent date in "date" of items_data[item]
+    return None
 
 def update_pred_items():
     # Integrate items from new lists into database used to create predictions
+    return None
 
 def generate_list():
     # Get last grocery shopping date, find interval that is next
@@ -134,4 +136,4 @@ def generate_list():
     # On web app, when user opens, prompt --This was our last prediction. Is this accurate to what you purchased?-- Update items_data from there
     # ***How can I replace the values taken from OG list to updated list in dictionary?*** 
 
-    return
+    return None
