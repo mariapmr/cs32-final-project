@@ -12,7 +12,9 @@ def get_list():
     ilist_date = ilist_date_info[0]
     ilist_weekday = ilist_date_info[1]
 
-    item_info = get_item()
+    items = []
+
+    items = get_items(ilist_date, items)
     
     # *** What to do if multiple purchases on same day? ***
     # *** Could I integrate inputting stores to see if
@@ -54,26 +56,61 @@ def get_date():
 
     return ilist_date, ilist_weekday
 
-def get_item():
+def get_items(ilist_date, items):
     # Prompt item input
     response = input('Input item? (Y/N)')
 
+    # Check response for correct input to begin info collection
     if response == 'Y':
-        get_item_info()
+        # User inputs item name
+        item_name = input('Item name?')
+
+        # User inputs item quantity
+        item_quant = input('Item quantity? (# unit i.e. 6 oz)')
+
+        item_info = (item_name, item_quant)
+
+        items.append(item_info)
+
+        print(f'List on {ilist_date}\n')
+        for i in items[i]:
+            print(f'{items[i]}\n')
+    
+        # Loop through asking for items until user finishes 
+        response = get_items()
     elif response == 'N':
-        break
+        # Print finalized list
+        print(f'List on {ilist_date}\n')
+        for i in items[i]:
+        print(f'{items[i]}\n')
+        '''
+        # *** STRETCH GOAL *** Prompt for corrections
+        correct_list(items)
+        '''
     else:
         print('Please input /'Y'/ for yes or /'N'/ for no.')
-        response = get_item()
+        get_items()
 
-def get_item_info():
-    
+# *** STRETCH GOAL ***
+'''
+def correct_list(items):
+    # Prompt corrections
+    c_response = input('Edit list? (Y/N)')
+    if c_response == 'Y':
+        # Initialize correction process
+        # ** Figure this out later **
+    elif c_response == 'N':
+        return None
+    else:
+        print('Please input /'Y'/ for yes or /'N'/ for no.')
+        correct_list(items)
+'''
 
-def check_recent(item):
+def check_recent():
     # Find most recent date in "date" of items_data[item]
 
-    return
-
+def update_pred_items():
+    # Integrate items from new lists into database used to create predictions
 
 def generate_list():
     # Get last grocery shopping date, find interval that is next
