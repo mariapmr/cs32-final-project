@@ -3,7 +3,11 @@ import statistics
 # Import datetime library to manipulate dates
 import datetime
 
-def get_list():
+lists = {}
+
+pred_items = {}
+
+def get_list(lists, pred_items):
     # Get list input from user for each item
         
     # Get date of grocery purchase
@@ -20,27 +24,13 @@ def get_list():
     # *** Could I integrate inputting stores to see if
     # certain stores are more common on certain days/items? ***
     
-    # Item name
+    # Iterate through item tuples
+    for i in items[i]:
+        # Set date as key
+        # Set value as dictionary of each item and quantity purchased
+        lists[ilist_date][items[i][0]] = items[i][2]
 
-    # Item 
-    
-    # Program stores list instance and prints for user
-    
-    
-    # Program prompts any corrections, if none move on (separate function?)
-    
-    
-    # Create dictionary of items_data
-        # Check if item input in dictionary
-        # If yes, add data to key value set
-    
-    
-    # Based on changes to items_data, update items_prediction dictionary
-
-
-    # Insert list into lists dictionary, date as key and entire list as value
-
-    return
+    return lists, pred_items
 
 def get_date():
     # Get date from user input
@@ -56,7 +46,7 @@ def get_date():
 
     return ilist_date, ilist_weekday
 
-def get_items(ilist_date, items):
+def get_items(ilist_date, ilist_weekday, items, pred_items):
     # Prompt item input
     response = input('Input item? (Y/N)')
 
@@ -72,10 +62,29 @@ def get_items(ilist_date, items):
 
         items.append(item_info)
 
+        # Print list after each item addition
         print(f'List on {ilist_date}\n')
         for i in items[i]:
             print(f'{items[i]}\n')
-    
+
+        # Check if item is in pred_items dictionary
+        if item_name not in pred_items:
+            # If not, create new key with item
+            pred_items[item_name] = {
+                'dates': set(),
+                'quantity': set(),
+                'weekday': set()
+            }
+            # Add data points from item info collected
+            pred_items[item_name]['dates'].add(ilist_date)
+            pred_items[item_name]['quantity'].add(item_quant)
+            pred_items[item_name]['weekday'].add(ilist_weekday)
+        else:
+            # If already in, add data points
+            pred_items[item_name]['dates'].add(ilist_date)
+            pred_items[item_name]['quantity'].add(item_quant)
+            pred_items[item_name]['weekday'].add(ilist_weekday)
+
         # Loop through asking for items until user finishes 
         response = get_items()
     elif response == 'N':
@@ -83,8 +92,10 @@ def get_items(ilist_date, items):
         print(f'List on {ilist_date}\n')
         for i in items[i]:
             print(f'{items[i]}\n')
+        
+        # *** STRETCH GOAL *** 
         '''
-        # *** STRETCH GOAL *** Prompt for corrections
+        # Prompt for corrections
         correct_list(items)
         '''
     else:
