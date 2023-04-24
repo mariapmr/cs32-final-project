@@ -12,6 +12,8 @@ def main():
 
     # Option to restart (re-prompt for input?)
     
+    return None
+    
 
 if __name__ == '__main__':
     main()
