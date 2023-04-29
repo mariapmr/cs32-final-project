@@ -3,69 +3,83 @@ import statistics
 # Import datetime library to manipulate dates
 import datetime
 
-lists = {}
-
-pred_items = {}
-
 def get_list(lists, pred_items):
     # Get list input from user for each item
-        
+
+    lists = lists
+
+    pred_items = pred_items
+    
+    ilist_date = ''
     # Get date of grocery purchase
-    ilist_date_info = get_date()
+    ilist_date_info = get_date(ilist_date)
 
     ilist_date = ilist_date_info[0]
     ilist_weekday = ilist_date_info[1]
 
     items = []
 
-    items = get_items(ilist_date, items)
+    ilist_info = get_items(ilist_date, ilist_weekday, items, pred_items)
     
+    items = ilist_info[0]
+
+    pred_items = ilist_info[1]
+
     # *** What to do if multiple purchases on same day? ***
     # *** Could I integrate inputting stores to see if
     # certain stores are more common on certain days/items? ***
+
+    ilist_items_dict = {}
     
     # Iterate through item tuples
-    for i in items[i]:
+    for i in range(len(items)):
         # Set date as key
         # Set value as dictionary of each item and quantity purchased
-        lists[ilist_date][items[i][0]] = items[i][2]
+        ilist_items_dict[items[i][0]] = items[i][1]
+        print(ilist_items_dict)
+    
+    lists[ilist_date] = ilist_items_dict
+
+    print(lists)
+    print(pred_items)
 
     return lists, pred_items
 
-def get_date():
+def get_date(ilist_date):
     # Get date from user input
-    date_input = input('Please input the date of your purchase (dd/mm/year):')
+    date_input = input('Please input the date of your purchase (dd/mm/year):\n')
 
     # Convert input to date object from datetime lib
-    date_input = date_input.split('/')
+    date_input = list(map(int, date_input.split('/')))
+
 
     ilist_date = datetime.date(date_input[2], date_input[1], date_input[0])
 
     # Get day of week from date object
-    ilist_weekday = datetime.weekday(ilist_date)
+    ilist_weekday = ilist_date.weekday()
 
     return ilist_date, ilist_weekday
 
 def get_items(ilist_date, ilist_weekday, items, pred_items):
     # Prompt item input
-    response = input('Input item? (Y/N)')
+    response = input('Input item? (Y/N)\n')
 
     # Check response for correct input to begin info collection
     if response == 'Y':
         # User inputs item name
-        item_name = input('Item name?')
+        item_name = input('Item name?\n')
 
         # User inputs item quantity
-        item_quant = input('Item quantity? (# unit i.e. 6 oz)')
+        item_quant = input('Item quantity? (# unit i.e. 6 oz)\n')
 
         item_info = (item_name, item_quant)
 
         items.append(item_info)
 
         # Print list after each item addition
-        print(f'List on {ilist_date}\n')
-        for i in items[i]:
-            print(f'{items[i]}\n')
+        print(f'List on {ilist_date}\n(\'item\', \'quantity\')')
+        for i in range(len(items)):
+            print(f'{items[i]}')
 
         # Check if item is in pred_items dictionary
         if item_name not in pred_items:
@@ -86,11 +100,11 @@ def get_items(ilist_date, ilist_weekday, items, pred_items):
             pred_items[item_name]['weekday'].add(ilist_weekday)
 
         # Loop through asking for items until user finishes 
-        response = get_items()
+        response = get_items(ilist_date, ilist_weekday, items, pred_items)
     elif response == 'N':
         # Print finalized list
         print(f'List on {ilist_date}\n')
-        for i in items[i]:
+        for i in range(len(items)):
             print(f'{items[i]}\n')
         
         # *** STRETCH GOAL *** 
@@ -100,7 +114,9 @@ def get_items(ilist_date, ilist_weekday, items, pred_items):
         '''
     else:
         print('Please input \'Y\' for yes or \'N\' for no.')
-        get_items()
+        get_items(ilist_date, ilist_weekday, items, pred_items)
+    
+    return items, pred_items
 
 # *** STRETCH GOAL ***
 '''
@@ -119,10 +135,6 @@ def correct_list(items):
 
 def check_recent():
     # Find most recent date in "date" of items_data[item]
-    return None
-
-def update_pred_items():
-    # Integrate items from new lists into database used to create predictions
     return None
 
 def generate_list():
@@ -148,3 +160,8 @@ def generate_list():
     # ***How can I replace the values taken from OG list to updated list in dictionary?*** 
 
     return None
+
+
+
+# import rich library and make things look nicer
+# ** do to get full points **
