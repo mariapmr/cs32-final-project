@@ -1,5 +1,4 @@
 import list_functions as lf
-import statistics
 # Import Rich library to style terminal
 from rich import print
 from rich.console import Console
