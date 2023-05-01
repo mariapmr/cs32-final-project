@@ -2,6 +2,12 @@
 import statistics
 # Import datetime library to manipulate dates
 import datetime
+# Import Rich library to style terminal
+import rich
+from rich import print
+from rich.table import Table
+from rich.console import Console
+console = Console()
 
 def get_list(lists, items_data, pred_items, list_intervals):
     '''
@@ -82,8 +88,13 @@ def get_date(ilist_date):
     date_input = input('Please input the date of your purchase (dd/mm/year):\n')
 
     # Convert input to datetime object
-    # Create list of elements of date
-    date_input = list(map(int, date_input.split('/')))
+    # Create list of elements of date, check if correct input
+    try:
+        date_input = list(map(int, date_input.split('/')))
+    # Re-prompt input if incorrect format
+    except:
+        print('Please input a date in the format dd/mm/year (i.e. 16/12/1998).')
+        get_date(ilist_date)
 
     # Convert list to datetime object (year, month, day)
     ilist_date = datetime.datetime(date_input[2], date_input[1], date_input[0])
@@ -97,6 +108,7 @@ def get_items(ilist_date, ilist_weekday, items, items_data):
     '''
         Collects inputted items item-by-item
     '''
+    console.rule(style='bold purple')
     # Prompt item input
     response = input('Input item? (Y/N)\n')
 
@@ -114,12 +126,15 @@ def get_items(ilist_date, ilist_weekday, items, items_data):
         # Add item to list of items
         items.append(item_info)
 
-        # Print list after each item addition
-        # Print list date and printout format
-        print(f'List on {ilist_date}\n')
-        # Print each element from items list
+        ilist = Table(show_header=True, header_style='bold #2070b2',
+              title=f'[bold]List on {ilist_date}')
+        ilist.add_column('[white on purple]item[/]', justify='center')
+        ilist.add_column('[white on deep_pink4]quantity[/]', justify='center')
+
         for i in range(len(items)):
-            print(f'{items[i]}')
+            ilist.add_row(f'{items[i][0]}', f'{items[i][1]}')
+        
+        console.print(ilist)
 
         # Check if item is in items_data dictionary
         if item_name not in items_data:
@@ -157,10 +172,16 @@ def get_items(ilist_date, ilist_weekday, items, items_data):
     # User has finished inputs
     elif response == 'N':
         # Print finalized list
-        print(f'List on {ilist_date}\n')
+        final_list = Table(show_header=True, header_style='bold #2070b2',
+              title=f'[bold]List on {ilist_date}')
+        final_list.add_column('[white on purple]item[/]', justify='center')
+        final_list.add_column('[white on deep_pink4]quantity[/]', justify='center')
+
         for i in range(len(items)):
-            print(f'{items[i]}\n')
-        
+            final_list.add_row(f'{items[i][0]}', f'{items[i][1]}')
+
+        console.print(final_list)
+
         # *** STRETCH GOAL *** 
         '''
         # Prompt for corrections
@@ -204,9 +225,10 @@ def update_predictions(items_data, pred_items):
 
 def generate_list(lists, pred_items, items_data, list_intervals, pred_lists):
     '''
-
+        Generates a list based on predicted values and stores
+        predicted lists in a dictionary
     '''
-    
+
     # Initialize predicted items list to be printed
     pred_list_items = []
     
@@ -215,39 +237,54 @@ def generate_list(lists, pred_items, items_data, list_intervals, pred_lists):
     # Find most recent purchase date
     most_recent = max(lists_dates)
 
-    # Find most common interval between purchases
-    pred_purchase_interval = statistics.mode(list_intervals)
+    # Check if multiple lists have been inputted
+    if len(lists_dates) < 2:
+        print('Please [bold green]input[/] multiple lists before [bold blue]generating[/] a list.')
+        return pred_lists
+    else:
+        # Find most common interval between purchases
+        pred_purchase_interval = statistics.mode(list_intervals)
 
-    # Set predicted purchase date as last purchase + interval
-    pred_list_date = most_recent + pred_purchase_interval
+        # Set predicted purchase date as last purchase + interval
+        pred_list_date = most_recent + pred_purchase_interval
 
-    # Get weekday of predicted date
-    pred_list_weekday = pred_list_date.weekday()
+        # Get weekday of predicted date
+        pred_list_weekday = pred_list_date.weekday()
 
-    # Iterate through each item in pred_items to see if likely to be in this purchase
-    for item_name in pred_items:
-        # Get weekday from pred_items
-        pred_item_weekday = pred_items[item_name]['pred_weekday']
-        # Get interval from pred_items
-        pred_item_interval = pred_items[item_name]['pred_interval']
-        # Check for weekday match
-        if pred_item_weekday == pred_list_weekday:
-            # Check for interval match
-            # Find most recent purchase of item
-            last_purchase = max(items_data[item_name]['dates'])
+        # Iterate through each item in pred_items to see if likely to be in this purchase
+        for item_name in pred_items:
+            # Check if pred_interval has been generated; if not, move to next item
+            try:
+                # Get interval from pred_items
+                pred_item_interval = pred_items[item_name]['pred_interval']
+            except:
+                continue
+            # Get weekday from pred_items
+            pred_item_weekday = pred_items[item_name]['pred_weekday']
+            # Check for weekday match
+            if pred_item_weekday == pred_list_weekday:
+                # Check for interval match
+                # Find most recent purchase of item
+                last_purchase = max(items_data[item_name]['dates'])
 
-            # Find interval between last purchase and predicted list date
-            interval = pred_list_date - last_purchase
+                # Find interval between last purchase and predicted list date
+                interval = pred_list_date - last_purchase
 
-            # Check if interval matches prediction
-            if pred_item_interval == interval:
-                # If yes, add to generated list
-                pred_list_items.append((item_name, pred_items[item_name]['pred_quantity']))
+                # Check if interval matches prediction
+                if pred_item_interval == interval:
+                    # If yes, add to generated list
+                    pred_list_items.append((item_name, pred_items[item_name]['pred_quantity']))
 
-    # Print predicted list
-    print(f'List generated for {pred_list_date}\n')
-    for i in range(len(pred_list_items)):
-        print(f'{pred_list_items[i]}')
+        # Print predicted list
+        pred_list = Table(show_header=True, header_style='bold #2070b2',
+              title=f'[bold]List generated for {pred_list_date}')
+        pred_list.add_column('[white on purple]item[/]', justify='center')
+        pred_list.add_column('[white on deep_pink4]quantity[/]', justify='center')
+
+        for i in range(len(pred_list_items)):
+            pred_list.add_row(f'{pred_list_items[i][0]}', f'{pred_list_items[i][1]}')
+        
+        console.print(pred_list)
 
     # Store predicted list items in dictionary
     pred_list_items_dict = {}
