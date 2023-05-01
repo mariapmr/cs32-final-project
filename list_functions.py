@@ -1,66 +1,102 @@
-# Import statistics for probabiity
+# Import statistics for mode
 import statistics
 # Import datetime library to manipulate dates
 import datetime
 
-def get_list(lists, pred_items):
-    # Get list input from user for each item
+def get_list(lists, items_data, pred_items, list_intervals):
+    '''
+        Collects grocery list input from user --
+        This function collects intervals between purchases 
+        and updates a dictionary of inputted lists.
+        Nested functions include: get_date(), get_items(),
+        and update_predictions()
+    '''
 
-    lists = lists
-
-    pred_items = pred_items
-    
+    # Initialize date variable 
     ilist_date = ''
-    # Get date of grocery purchase
+    # Store return of get_date
     ilist_date_info = get_date(ilist_date)
 
+    # Store datetime object
     ilist_date = ilist_date_info[0]
+    # Store weekday of inputted date
     ilist_weekday = ilist_date_info[1]
 
+    # Find interval between this purchase and last purchase
+    # Store previous purchase dates as list
+    list_dates = list(lists.keys())
+
+    # Check if previous purchases exist
+    if len(list_dates) != 0:
+        # Find most recent purchase
+        most_recent = max(list_dates)
+
+        # Subtract dates to find interval between purchases
+        interval = ilist_date - most_recent
+
+        # Add to list of all intervals between purchases
+        list_intervals.append(interval)
+
+    # Initialize list of items
     items = []
 
-    ilist_info = get_items(ilist_date, ilist_weekday, items, pred_items)
+    # Store return of get_items
+    ilist_info = get_items(ilist_date, ilist_weekday, items, items_data)
     
+    # List of item tuples - (item name, quantity)
     items = ilist_info[0]
 
-    pred_items = ilist_info[1]
+    '''
+        Dictionary containing item data - 
+        {item name: 
+            {'dates': [* list of dates when item was purchased as datetime *]},
+            {'quantity': [* list of quantities as str *]},
+            {'weekday': [* list of weekdays as int *]},
+            {'interval': [* list of intervals as timedelta *]}
+        }
+    '''
+    items_data = ilist_info[1]
 
-    # *** What to do if multiple purchases on same day? ***
-    # *** Could I integrate inputting stores to see if
-    # certain stores are more common on certain days/items? ***
-
+    # Initialize dictionary where inputted items are stored
     ilist_items_dict = {}
     
     # Iterate through item tuples
     for i in range(len(items)):
-        # Set date as key
-        # Set value as dictionary of each item and quantity purchased
+        # Set item name as key, quantity as value
         ilist_items_dict[items[i][0]] = items[i][1]
-        print(ilist_items_dict)
     
+    # Update lists dictionary
+    # Set inputted date as key, inputted items dict as value 
     lists[ilist_date] = ilist_items_dict
 
-    print(lists)
-    print(pred_items)
+    # Update dictionary containing prediction values
+    pred_items = update_predictions(items_data, pred_items)
 
-    return lists, pred_items
+    return lists, items_data, list_intervals, pred_items
 
 def get_date(ilist_date):
+    '''
+        Collects inputted list date from user
+    '''
     # Get date from user input
     date_input = input('Please input the date of your purchase (dd/mm/year):\n')
 
-    # Convert input to date object from datetime lib
+    # Convert input to datetime object
+    # Create list of elements of date
     date_input = list(map(int, date_input.split('/')))
 
+    # Convert list to datetime object (year, month, day)
+    ilist_date = datetime.datetime(date_input[2], date_input[1], date_input[0])
 
-    ilist_date = datetime.date(date_input[2], date_input[1], date_input[0])
-
-    # Get day of week from date object
+    # Get day of week from datetime object
     ilist_weekday = ilist_date.weekday()
 
     return ilist_date, ilist_weekday
 
-def get_items(ilist_date, ilist_weekday, items, pred_items):
+def get_items(ilist_date, ilist_weekday, items, items_data):
+    '''
+        Collects inputted items item-by-item
+    '''
     # Prompt item input
     response = input('Input item? (Y/N)\n')
 
@@ -72,35 +108,53 @@ def get_items(ilist_date, ilist_weekday, items, pred_items):
         # User inputs item quantity
         item_quant = input('Item quantity? (# unit i.e. 6 oz)\n')
 
+        # Store item name and quantity
         item_info = (item_name, item_quant)
 
+        # Add item to list of items
         items.append(item_info)
 
         # Print list after each item addition
-        print(f'List on {ilist_date}\n(\'item\', \'quantity\')')
+        # Print list date and printout format
+        print(f'List on {ilist_date}\n')
+        # Print each element from items list
         for i in range(len(items)):
             print(f'{items[i]}')
 
-        # Check if item is in pred_items dictionary
-        if item_name not in pred_items:
+        # Check if item is in items_data dictionary
+        if item_name not in items_data:
             # If not, create new key with item
-            pred_items[item_name] = {
-                'dates': set(),
-                'quantity': set(),
-                'weekday': set()
+            items_data[item_name] = {
+                'dates': [],
+                'quantity': [],
+                'weekday': [],
+                'interval': []
             }
+
             # Add data points from item info collected
-            pred_items[item_name]['dates'].add(ilist_date)
-            pred_items[item_name]['quantity'].add(item_quant)
-            pred_items[item_name]['weekday'].add(ilist_weekday)
+            items_data[item_name]['dates'].append(ilist_date)
+            items_data[item_name]['quantity'].append(item_quant)
+            items_data[item_name]['weekday'].append(ilist_weekday)
+            # Do not add interval if first time collecting data on item
         else:
-            # If already in, add data points
-            pred_items[item_name]['dates'].add(ilist_date)
-            pred_items[item_name]['quantity'].add(item_quant)
-            pred_items[item_name]['weekday'].add(ilist_weekday)
+            # Find most recent date from 'dates' category prior to ilist_date
+            # Used to find interval
+            most_recent = max(items_data[item_name]['dates'])
+
+            # If already in dictionary, add data points
+            items_data[item_name]['dates'].append(ilist_date)
+            items_data[item_name]['quantity'].append(item_quant)
+            items_data[item_name]['weekday'].append(ilist_weekday)
+        
+            # Find interval between last purchase and new purchase
+            interval = ilist_date - most_recent
+            
+            # Add interval to dictionary as timedelta object
+            items_data[item_name]['interval'].append(interval)
 
         # Loop through asking for items until user finishes 
-        response = get_items(ilist_date, ilist_weekday, items, pred_items)
+        response = get_items(ilist_date, ilist_weekday, items, items_data)
+    # User has finished inputs
     elif response == 'N':
         # Print finalized list
         print(f'List on {ilist_date}\n')
@@ -112,56 +166,98 @@ def get_items(ilist_date, ilist_weekday, items, pred_items):
         # Prompt for corrections
         correct_list(items)
         '''
+    # Re-prompt user if input is incorrect
     else:
         print('Please input \'Y\' for yes or \'N\' for no.')
-        get_items(ilist_date, ilist_weekday, items, pred_items)
+        get_items(ilist_date, ilist_weekday, items, items_data)
     
-    return items, pred_items
+    return items, items_data
 
-# *** STRETCH GOAL ***
-'''
-def correct_list(items):
-    # Prompt corrections
-    c_response = input('Edit list? (Y/N)')
-    if c_response == 'Y':
-        # Initialize correction process
-        # ** Figure this out later **
-    elif c_response == 'N':
-        return None
-    else:
-        print('Please input /'Y'/ for yes or /'N'/ for no.')
-        correct_list(items)
-'''
+def update_predictions(items_data, pred_items):
+    '''
+        Updates dictionary where predicted values
+        are stored for each item
+        Called after each input of a list
+    '''
+    # Get keys from items_data as item_names
+    item_names = list(items_data.keys())
 
-def check_recent():
-    # Find most recent date in "date" of items_data[item]
-    return None
+    # Iterate through keys to form pred_items
+    for i in range(len(item_names)):
+        # Replace previous data with updated data with each function call
+        # Check if there is an interval (item was inputted more than once)
+        if len(items_data[item_names[i]]['quantity']) > 1:
+            pred_items[item_names[i]] = {
+                'pred_quantity': statistics.mode(items_data[item_names[i]]['quantity']),
+                'pred_weekday': statistics.mode(items_data[item_names[i]]['weekday']),
+                'pred_interval': statistics.mode(items_data[item_names[i]]['interval'])
+            }
+        else:
+            # If no interval, only updated quantity and weekday
+            pred_items[item_names[i]] = {
+                'pred_quantity': statistics.mode(items_data[item_names[i]]['quantity']),
+                'pred_weekday': statistics.mode(items_data[item_names[i]]['weekday']),
+            }
 
-def generate_list():
-    # Get last grocery shopping date, find interval that is next
-    # Get current date and pick date for list closest to today, set as list_date
-
-
-    # Find items that match to interval and day of week
-
-
-    # Print list
-
-
-    # Prompt user for feedback (add or remove items, edit quantities)
+    return pred_items
 
 
-    # Take info from list and place in items_data to update
+def generate_list(lists, pred_items, items_data, list_intervals, pred_lists):
+    '''
+
+    '''
     
+    # Initialize predicted items list to be printed
+    pred_list_items = []
+    
+    # Get list of purchase dates
+    lists_dates = list(lists.keys())
+    # Find most recent purchase date
+    most_recent = max(lists_dates)
 
+    # Find most common interval between purchases
+    pred_purchase_interval = statistics.mode(list_intervals)
 
-    # I would want to eventually add ability to correct data after purchases.
-    # On web app, when user opens, prompt --This was our last prediction. Is this accurate to what you purchased?-- Update items_data from there
-    # ***How can I replace the values taken from OG list to updated list in dictionary?*** 
+    # Set predicted purchase date as last purchase + interval
+    pred_list_date = most_recent + pred_purchase_interval
 
-    return None
+    # Get weekday of predicted date
+    pred_list_weekday = pred_list_date.weekday()
 
+    # Iterate through each item in pred_items to see if likely to be in this purchase
+    for item_name in pred_items:
+        # Get weekday from pred_items
+        pred_item_weekday = pred_items[item_name]['pred_weekday']
+        # Get interval from pred_items
+        pred_item_interval = pred_items[item_name]['pred_interval']
+        # Check for weekday match
+        if pred_item_weekday == pred_list_weekday:
+            # Check for interval match
+            # Find most recent purchase of item
+            last_purchase = max(items_data[item_name]['dates'])
 
+            # Find interval between last purchase and predicted list date
+            interval = pred_list_date - last_purchase
 
-# import rich library and make things look nicer
-# ** do to get full points **
+            # Check if interval matches prediction
+            if pred_item_interval == interval:
+                # If yes, add to generated list
+                pred_list_items.append((item_name, pred_items[item_name]['pred_quantity']))
+
+    # Print predicted list
+    print(f'List generated for {pred_list_date}\n')
+    for i in range(len(pred_list_items)):
+        print(f'{pred_list_items[i]}')
+
+    # Store predicted list items in dictionary
+    pred_list_items_dict = {}
+
+    # Iterate through pred_list_item tuples
+    for i in range(len(pred_list_items)):
+        # Set item name as key, quantity as value
+        pred_list_items_dict[pred_list_items[i][0]] = pred_list_items[i][1]
+    
+    # Set predicted list date as key, items dict as value
+    pred_lists[pred_list_date] = pred_list_items_dict
+
+    return pred_lists
