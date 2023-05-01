@@ -126,11 +126,15 @@ def get_items(ilist_date, ilist_weekday, items, items_data):
         # Add item to list of items
         items.append(item_info)
 
+        # Print list after each item addition
+        # Create table with list date as header
         ilist = Table(show_header=True, header_style='bold #2070b2',
               title=f'[bold]List on {ilist_date}')
+        # Add item and quantity columns
         ilist.add_column('[white on purple]item[/]', justify='center')
         ilist.add_column('[white on deep_pink4]quantity[/]', justify='center')
 
+        # Add row for each item
         for i in range(len(items)):
             ilist.add_row(f'{items[i][0]}', f'{items[i][1]}')
         
@@ -172,21 +176,19 @@ def get_items(ilist_date, ilist_weekday, items, items_data):
     # User has finished inputs
     elif response == 'N':
         # Print finalized list
+        # Create table with list date as header
         final_list = Table(show_header=True, header_style='bold #2070b2',
               title=f'[bold]List on {ilist_date}')
+        # Add item and quantity columns
         final_list.add_column('[white on purple]item[/]', justify='center')
         final_list.add_column('[white on deep_pink4]quantity[/]', justify='center')
 
+        # Add row for each item
         for i in range(len(items)):
             final_list.add_row(f'{items[i][0]}', f'{items[i][1]}')
 
         console.print(final_list)
 
-        # *** STRETCH GOAL *** 
-        '''
-        # Prompt for corrections
-        correct_list(items)
-        '''
     # Re-prompt user if input is incorrect
     else:
         print('Please input \'Y\' for yes or \'N\' for no.')
@@ -225,10 +227,10 @@ def update_predictions(items_data, pred_items):
 
 def generate_list(lists, pred_items, items_data, list_intervals, pred_lists):
     '''
-        Generates a list based on predicted values and stores
-        predicted lists in a dictionary
+        Generates a list based on predicted values, prints list,
+        and stores predicted lists in a dictionary
     '''
-
+    
     # Initialize predicted items list to be printed
     pred_list_items = []
     
@@ -276,11 +278,14 @@ def generate_list(lists, pred_items, items_data, list_intervals, pred_lists):
                     pred_list_items.append((item_name, pred_items[item_name]['pred_quantity']))
 
         # Print predicted list
+        # Create table with predicted date as header
         pred_list = Table(show_header=True, header_style='bold #2070b2',
               title=f'[bold]List generated for {pred_list_date}')
+        # Add item and quantity columns
         pred_list.add_column('[white on purple]item[/]', justify='center')
         pred_list.add_column('[white on deep_pink4]quantity[/]', justify='center')
 
+        # Add row for each item
         for i in range(len(pred_list_items)):
             pred_list.add_row(f'{pred_list_items[i][0]}', f'{pred_list_items[i][1]}')
         

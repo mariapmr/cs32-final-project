@@ -34,6 +34,7 @@ def prompt_user():
         # Restart process once done
         prompt_user()
     elif response == 'exit':
+        # Thank user
         console.print('## THANK YOU FOR USING GROCERY LIST CREATOR ##', style='bold white on red', justify='center')
         console.rule(style='bold bright_red')
         # End program 
